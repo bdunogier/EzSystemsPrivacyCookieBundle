@@ -1,0 +1,21 @@
+{
+    "name": "ezsystems/privacy-cookie-bundle",
+    "description": "Privacy cookie banner integration bundle into eZ Publish/eZ Platform",
+    "keywords": ["cookies", "privacy", "policy"],
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "Rafal Toborek",
+            "email": "rafal.toborek@ez.no",
+            "role": "Creator/developer"
+        }
+    ],
+    "require": {
+        "symfony/symfony": "~2.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "EzSystems\\PrivacyCookieBundle\\": ""
+        }
+    }
+}
