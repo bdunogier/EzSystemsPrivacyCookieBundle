@@ -9,11 +9,13 @@
 namespace EzSystems\PrivacyCookieBundle\Twig;
 
 use \Symfony\Component\DependencyInjection\ContainerInterface;
+use \Twig_Extension;
+use \Twig_Function_Method;
 
 /**
  * PrivacyCookie Twig helper which renders necessary snippet code.
  */
-class PrivacyCookieTwigExtension extends \Twig_Extension
+class PrivacyCookieTwigExtension extends Twig_Extension
 {
     /**
      * we must inject service_container this way
@@ -22,6 +24,13 @@ class PrivacyCookieTwigExtension extends \Twig_Extension
      * @var $container \Symfony\Component\DependencyInjection\ContainerInterface
      */
     protected $container;
+
+    /**
+     * default options
+     *
+     * @var array
+     */
+    protected $options = [];
 
     public function __construct(ContainerInterface $container)
     {
@@ -36,31 +45,51 @@ class PrivacyCookieTwigExtension extends \Twig_Extension
     public function getFunctions()
     {
         return [
-            'show_privacy_cookie_banner' => new \Twig_Function_Method($this, 'showPrivacyCookieBanner', [
+            'show_privacy_cookie_banner' => new Twig_Function_Method($this, 'showPrivacyCookieBanner', [
                 'is_safe' => [ 'html' ]
             ]),
         ];
     }
 
     /**
+     * Set default cookie name.
+     *
+     * @param $value string
+     */
+    public function setCookieName($value)
+    {
+        $this->options[ 'cookieName' ] = $value;
+    }
+
+    /**
+     * Ses default cookie days validity.
+     *
+     * @param $value int
+     */
+    public function setDays($value)
+    {
+        $this->options[ 'days' ] = $value;
+    }
+
+    /**
      * Render cookie privacy banner snippet code
      * - should be included at the end of template before the body ending tag
      *
-     * @param int $privacyPolicyContentId cookie policy content ID
+     * @param string $policyUrl cookie policy page address
      * @param array $options optional parameters:
      *        cookieName - name to be used to store cookie status
      *        days - for how many days this banner should be hidden when user accepts policy?
      *        bannerCaption - replace default banner message caption
      * @return string
      */
-    public function showPrivacyCookieBanner($privacyPolicyContentId, array $options = array())
+    public function showPrivacyCookieBanner($policyUrl, array $options = array())
     {
         return $this->container->get("templating")->render(
             '@EzSystemsPrivacyCookieBundle/Resources/views/privacycookie.html.twig',
             [
-                'contentId' => $privacyPolicyContentId,
-                'cookieName' => empty($options[ 'cookieName' ]) ? $this->container->getParameter('ez_privacy_cookie.cookie_name') : $options[ 'cookieName' ],
-                'days' => empty($options[ 'days' ]) ? $this->container->getParameter('ez_privacy_cookie.days') : $options[ 'days' ],
+                'policyUrl' => $policyUrl,
+                'cookieName' => empty($options[ 'cookieName' ]) ? $this->options[ 'cookieName' ] : $options[ 'cookieName' ],
+                'days' => empty($options[ 'days' ]) ? $this->options[ 'days' ] : $options[ 'days' ],
                 'bannerCaption' => empty($options[ 'bannerCaption' ]) ? null : $options[ 'bannerCaption' ]
             ]
         );
