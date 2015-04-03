@@ -1,13 +1,39 @@
 parameters:
     ez_privacy_cookie_twig_extension: EzSystems\PrivacyCookieBundle\Twig\PrivacyCookieTwigExtension
+    ez_privacy_cookie.banner_factory.class: \EzSystems\EzSystemsPrivacyCookieBundle\PrivacyCookieBanner\BannerFactory
+    ez_privacy_cookie.configuration_banner_factory.class: EzSystems\EzSystemsPrivacyCookieBundle\PrivacyCookieBanner\Factory\ConfigurationBasedBannerFactory
+    ez_privacy_cookie.ez_content_banner_factory.class: EzSystems\EzSystemsPrivacyCookieBundle\PrivacyCookieBanner\Factory\EzContentBasedBannerFactory
 
 services:
     ez_privacy_cookie.twig.extension:
         class: %ez_privacy_cookie_twig_extension%
         arguments:
             - @service_container
-        calls:
-            - [setCookieName, [%ez_privacy_cookie.cookie_name%]]
-            - [setDays, [%ez_privacy_cookie.days%]]
+            - @ez_privacy_cookie.banner_factory
         tags:
             - { name: twig.extension }
+
+    ez_privacy_cookie.banner_factory:
+        class: %ez_privacy_cookie.banner_factory.class%
+        alias: ez_privacy_cookie.configuration_banner_factory
+
+    ez_privacy_cookie.configuration_banner_factory:
+        class: %ez_privacy_cookie.configuration_banner_factory.class%
+        arguments:
+            -
+                cookie_name: %ez_privacy_cookie.cookie_name%
+                cookie_validity: %ez_privacy_cookie.days%
+                banner_caption: ""
+                banner_link_text: ""
+                banner_link_url: ""
+
+    ez_privacy_cookie.ez_content_banner_factory:
+        class: %ez_privacy_cookie.ez_content_banner_factory.class%
+        arguments:
+            - @ez_privacy_cookie.ez_content_banner_factory.content_factory
+
+    ez_privacy_cookie.ez_content_banner_factory.content_factory:
+        class: eZ\Publish\API\Repository\Values\Content\Content
+        factory_service: ezpublish.api.service.content
+        factory_method: loadContent
+        arguments: [%ez_privacy_cookie.ez_content_banner.content_id%]

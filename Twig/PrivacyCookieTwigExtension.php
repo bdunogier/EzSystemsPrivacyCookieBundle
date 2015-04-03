@@ -8,6 +8,7 @@
 
 namespace EzSystems\PrivacyCookieBundle\Twig;
 
+use EzSystems\EzSystemsPrivacyCookieBundle\PrivacyCookieBanner\Banner;
 use \Symfony\Component\DependencyInjection\ContainerInterface;
 use \Twig_Extension;
 use \Twig_Function_Method;
@@ -32,9 +33,15 @@ class PrivacyCookieTwigExtension extends Twig_Extension
      */
     protected $options = [];
 
-    public function __construct(ContainerInterface $container)
+    /**
+     * @var \EzSystems\EzSystemsPrivacyCookieBundle\PrivacyCookieBanner\Banner
+     */
+    private $banner;
+
+    public function __construct(ContainerInterface $container, Banner $banner )
     {
         $this->container = $container;
+        $this->banner = $banner;
     }
 
     public function getName()
@@ -52,26 +59,6 @@ class PrivacyCookieTwigExtension extends Twig_Extension
     }
 
     /**
-     * Set default cookie name.
-     *
-     * @param $value string
-     */
-    public function setCookieName($value)
-    {
-        $this->options[ 'cookieName' ] = $value;
-    }
-
-    /**
-     * Ses default cookie days validity.
-     *
-     * @param $value int
-     */
-    public function setDays($value)
-    {
-        $this->options[ 'days' ] = $value;
-    }
-
-    /**
      * Render cookie privacy banner snippet code
      * - should be included at the end of template before the body ending tag
      *
@@ -82,15 +69,15 @@ class PrivacyCookieTwigExtension extends Twig_Extension
      *        bannerCaption - replace default banner message caption
      * @return string
      */
-    public function showPrivacyCookieBanner($policyUrl, array $options = array())
+    public function showPrivacyCookieBanner()
     {
         return $this->container->get("templating")->render(
             '@EzSystemsPrivacyCookieBundle/Resources/views/privacycookie.html.twig',
             [
-                'policyUrl' => $policyUrl,
-                'cookieName' => empty($options[ 'cookieName' ]) ? $this->options[ 'cookieName' ] : $options[ 'cookieName' ],
-                'days' => empty($options[ 'days' ]) ? $this->options[ 'days' ] : $options[ 'days' ],
-                'bannerCaption' => empty($options[ 'bannerCaption' ]) ? null : $options[ 'bannerCaption' ]
+                'policyUrl' => $this->banner->policyPageUrl,
+                'cookieName' => $this->banner->cookieName,
+                'days' => $this->banner->cookieValidity,
+                'bannerCaption' => $this->banner->caption
             ]
         );
     }
